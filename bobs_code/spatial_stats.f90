@@ -14,7 +14,7 @@
 ! ntrials - number of Monte-carlo trials
 ! NUMLOC - number of locations for to-nearest-cloud distances
 
-      INTEGER:: ERROR,NX,NY,n,m,p,ncl
+      INTEGER:: ERROR,NX,NY,n,m,p,ncl,i
 ! ERROR - used to detect errors
 ! NX - number of x grid points
 ! NY - number of y grid points
@@ -23,7 +23,7 @@
       INTEGER:: k,ksq
 ! k - number of locations on regular grid
 ! ksq - total number of locations considered
-      INTEGER, DIMENSION(45):: IHEAD
+      INTEGER(4), DIMENSION(45):: IHEAD
 ! IHEAD - integer headers to pp file
       INTEGER, DIMENSION(MAXNCL):: sizes,nnid
 ! sizes - number of grid points constituting the cloud
@@ -95,9 +95,15 @@
 ! Allocate arrays
 !
       READ(81,ERR=9006)IHEAD,RHEAD
+      DO i=1,20
+        WRITE(*,*) 'IHEAD() ',IHEAD(i)
+      END DO
+      where (IHEAD > 2**3-1) IHEAD=IHEAD-2**4+1
       NX=IHEAD(19)
       NY=IHEAD(18)
       ALLOCATE(INDAT(NX,NY),STAT=ERROR)
+      WRITE(*,*) 'NX ',NX
+      WRITE(*,*) 'NY ',NY
       IF (ERROR.NE.0) GOTO 9001
       REWIND(81)
 !     
@@ -175,8 +181,8 @@
          cdfnnmin(n)=RLGE
          do m=1,ntrials
             cdf_mcnnsep(n)=cdf_mcnnsep(n)+COUNT(mcnnsep(1:ncl,m).LT.valbin(n))
-            cdfnnmax(n)=MAX(cdfnnmax(n),COUNT(mcnnsep(1:ncl,m).LT.valbin(n)))
-            cdfnnmin(n)=MIN(cdfnnmin(n),COUNT(mcnnsep(1:ncl,m).LT.valbin(n)))
+            cdfnnmax(n)=MAX(cdfnnmax(n),REAL(COUNT(mcnnsep(1:ncl,m).LT.valbin(n))))
+            cdfnnmin(n)=MIN(cdfnnmin(n),REAL(COUNT(mcnnsep(1:ncl,m).LT.valbin(n))))
          end do
          cdf_mcnnsep(n)=cdf_mcnnsep(n)/(ncl*ntrials*1.0)
          cdfnnmax(n)=cdfnnmax(n)/(ncl*1.0)
@@ -208,8 +214,8 @@
          cdfmin(n)=RLGE
          do m=1,ntrials
             cdf_mcsep(n)=cdf_mcsep(n)+COUNT(mcsep(1:ncl,1:ncl,m).LT.valbin(n))
-            cdfmax(n)=MAX(cdfmax(n),COUNT(mcsep(1:ncl,1:ncl,m).LT.valbin(n)))
-            cdfmin(n)=MIN(cdfmin(n),COUNT(mcsep(1:ncl,1:ncl,m).LT.valbin(n)))
+            cdfmax(n)=MAX(cdfmax(n),REAL(COUNT(mcsep(1:ncl,1:ncl,m).LT.valbin(n))))
+            cdfmin(n)=MIN(cdfmin(n),REAL(COUNT(mcsep(1:ncl,1:ncl,m).LT.valbin(n))))
          end do
          cdf_mcsep(n)=cdf_mcsep(n)/(ncl*(ncl-1)*ntrials*1.0)
          cdfmax(n)=cdfmax(n)/(ncl*(ncl-1)*1.0)
@@ -236,8 +242,8 @@
          cdflocmin=RLGE
          do m=1,ntrials
             cdf_mclocsep(n)=cdf_mclocsep(n)+COUNT(mclocsep(1:ksq,m).LT.valbin(n))
-            cdflocmax(n)=MAX(cdflocmax(n),COUNT(mclocsep(1:ksq,m).LT.valbin(n)))
-            cdflocmin(n)=MIN(cdflocmin(n),COUNT(mclocsep(1:ksq,m).LT.valbin(n)))
+            cdflocmax(n)=MAX(cdflocmax(n),REAL(COUNT(mclocsep(1:ksq,m).LT.valbin(n))))
+            cdflocmin(n)=MIN(cdflocmin(n),REAL(COUNT(mclocsep(1:ksq,m).LT.valbin(n))))
          end do
          cdf_mclocsep(n)=cdf_mclocsep(n)/(ksq*ntrials*1.0)
          cdflocmax(n)=cdflocmax(n)/(ksq*1.0)
@@ -248,7 +254,7 @@
       STOP
 !
  9000 CONTINUE
-      WRITE(*,*) 'Could not open input file',FILE
+      WRITE(*,*) 'Could not open input file ',FILE
       GOTO 10000
  9001 CONTINUE
       WRITE(*,*) 'Allocation error'
@@ -267,7 +273,7 @@
       INTEGER, INTENT(IN):: ncl,MAXNCL
 ! ncl - number of cloud structures 
 ! MAXNCL - maximum number of clouds
-      INTEGER, INTENT(IN), DIMENSION(1):: SEED
+      INTEGER, INTENT(IN), DIMENSION(12):: SEED
 ! SEED - seed for random number generator
 
       REAL, INTENT(OUT), DIMENSION(MAXNCL):: locx,locy
