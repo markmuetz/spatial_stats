@@ -23,7 +23,7 @@
       INTEGER:: k,ksq
 ! k - number of locations on regular grid
 ! ksq - total number of locations considered
-      INTEGER(4), DIMENSION(45):: IHEAD
+      INTEGER, DIMENSION(45):: IHEAD
 ! IHEAD - integer headers to pp file
       INTEGER, DIMENSION(MAXNCL):: sizes,nnid
 ! sizes - number of grid points constituting the cloud
@@ -98,7 +98,6 @@
       DO i=1,20
         WRITE(*,*) 'IHEAD() ',IHEAD(i)
       END DO
-      where (IHEAD > 2**3-1) IHEAD=IHEAD-2**4+1
       NX=IHEAD(19)
       NY=IHEAD(18)
       ALLOCATE(INDAT(NX,NY),STAT=ERROR)
