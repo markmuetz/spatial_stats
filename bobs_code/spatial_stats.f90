@@ -49,6 +49,7 @@
       REAL, DIMENSION(19):: RHEAD
 ! RHEAD - real headers to pp file
       REAL, DIMENSION(:,:), ALLOCATABLE:: INDAT
+      !REAL, DIMENSION(20):: INDAT
 ! INDAT - data read in from FILE
       REAL, DIMENSION(MAXNCL):: locx,locy,nnsep
 ! locx - x location of cloud centre
@@ -97,6 +98,10 @@
       READ(81,ERR=9006)IHEAD,RHEAD
       NX=IHEAD(19)
       NY=IHEAD(18)
+! IF NX=1000 and NY=98 then can read INDAT from file
+! If NY=99 tho it will fail...
+      !NX=1024
+      !NY=768
       WRITE(*,*) 'NX ',NX
       WRITE(*,*) 'NY ',NY
       ALLOCATE(INDAT(NX,NY),STAT=ERROR)
@@ -117,8 +122,18 @@
       ELSE
          WRITE(*,*) 'Reading 1'
          READ(81,ERR=9006,END=101)IHEAD,RHEAD
+
          WRITE(*,*) 'Reading 2'
-         READ(81,ERR=9006,END=101)INDAT
+
+         !This raises an IOSTAT Error 5016: LIBERROR_SHORT_RECORD.
+         ! I don't think how to fix this.
+         ! original:
+         !READ(81,ERR=9006,END=101)INDAT
+         READ(81,END=101,IOSTAT=ERROR)INDAT
+         WRITE(*,*) 'Error', ERROR
+         IF (ERROR.NE.0) GOTO 9006
+         WRITE(*,*) 'Read'
+
       END IF
       GOTO 111 ! If we are here then there may be more data to come
  101  CONTINUE ! If we are here then this is the last of the data
