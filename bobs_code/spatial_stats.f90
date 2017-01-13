@@ -89,20 +89,17 @@
 !  
       FILE='rates_fixed.pp' ! filename
       OPEN(UNIT=81,FILE=FILE,FORM='UNFORMATTED',STATUS='OLD', &
-      & ACTION='READ',IOSTAT=ERROR)
+      & ACTION='READ',IOSTAT=ERROR,CONVERT='BIG_ENDIAN')
       IF (ERROR.NE.0) GOTO 9000      
 !
 ! Allocate arrays
 !
       READ(81,ERR=9006)IHEAD,RHEAD
-      DO i=1,20
-        WRITE(*,*) 'IHEAD() ',IHEAD(i)
-      END DO
       NX=IHEAD(19)
       NY=IHEAD(18)
-      ALLOCATE(INDAT(NX,NY),STAT=ERROR)
       WRITE(*,*) 'NX ',NX
       WRITE(*,*) 'NY ',NY
+      ALLOCATE(INDAT(NX,NY),STAT=ERROR)
       IF (ERROR.NE.0) GOTO 9001
       REWIND(81)
 !     
@@ -114,10 +111,13 @@
 !
       check=.true.
  100  CONTINUE ! Start of loop for differencing 
+      WRITE(*,*) 'Looping'
       IF (END1) THEN ! Get data from file  if there is any
          INDAT=0.0
       ELSE
+         WRITE(*,*) 'Reading 1'
          READ(81,ERR=9006,END=101)IHEAD,RHEAD
+         WRITE(*,*) 'Reading 2'
          READ(81,ERR=9006,END=101)INDAT
       END IF
       GOTO 111 ! If we are here then there may be more data to come
